@@ -20,15 +20,11 @@ certifi==2019.11.28
 cffi==1.12.3
 chardet==3.0.4
 Click==7.0
-cloudpickle==1.2.2
-clyent==1.2.2
-colorama==0.4.1
 conda==4.8.3
 conda-build==3.18.8
 conda-package-handling==1.6.0
 conda-verify==3.4.2
 contextlib2==0.6.0
-cryptography==2.7
 cycler==0.10.0
 Cython==0.29.13
 cytoolz==0.10.0

@@ -1,0 +1,45 @@
+<!-- This html page is for editing users' goals. Graphs will be shown after editing -->
+
+{% extends 'fitness_app/base.html' %}
+{% load crispy_forms_tags %}
+
+{%block title %}Edit Goals{% endblock %}
+{% block content %}
+<div class="jumbotron page-section">
+	<h1>Edit Goals</h1>
+	<p>
+		This page allows you to set Goals for yourself so you can hit your ideal bodyweight, bodyfat percentage or One-Rep-Max for a specific exercise!
+	</p>
+
+	<div id="bodyweight-form" style="margin-top: 15px;">
+		<h3> Set your bodyweight goal in Kg </h3>
+		<form method="post">
+			{% csrf_token %}
+		    {%crispy weightForm%}
+		</form>
+	</div>
+
+	<div id="bodyfat-form" style="margin-top: 15px;">
+		<h3> Set your ideal body fat percentage </h3>
+		<form method="post">
+			{% csrf_token %}
+		    {%crispy fatForm%}
+		</form>
+	</div>
+
+<div class="jumbotron page-section">
+	<div id="workout-goal-form" style="margin-top: 15px;">
+		<h3> Set your target One-Rep-Max for a particular exercise </h3>
+		<form method="post">
+			{% csrf_token %}
+		    {%crispy strengthForm%}
+		</form>
+
+		<form method="post">
+			{% csrf_token %}
+		    {%crispy tdeeForm%}
+		</form>
+	</div>
+</div>
+
+{% endblock %}

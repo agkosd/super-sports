@@ -1,0 +1,10 @@
+{% extends 'fitness_app/base.html' %}
+
+{% block content %}
+<div><h1>Please fill in your DOB and height!</h1></div>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success"> submit</button>
+</form>
+{% endblock %}

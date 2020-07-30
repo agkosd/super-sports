@@ -1,0 +1,33 @@
+<!-- This html page is for showing the workout Logger. It has workout name, date, sets, reps, and weight fields -->
+
+{% extends 'fitness_app/base.html' %}
+
+{% block content %}
+<div class="jumbotron page-section">
+<a href="{%url 'fitness_app:logger'%}">
+	<button type="submit" class='btn btn-primary'>Log Workout</button>
+</a>
+<table style='width:100%'>
+	<tr>
+		<th>Workout Name</th>
+		<th>Workout Date</th>
+		<th>Sets</th>
+		<th>Reps</th>
+		<th>Weight</th>
+	</tr>
+{%for log in logs %}
+<tr>
+	<th>{{log.workout_name}}</th>
+	<th>{{log.workout_date}}</th>
+	<th>{{log.sets}}</th>
+	<th>{{log.reps}}</th>
+	<th>{{log.workout_weight}}</th>
+	<th><a href="{%url 'fitness_app:logger-update' log.id%}"><button type="button" class="btn btn-primary">Update</button></a></th>
+	<th><a href="{%url 'fitness_app:logger-delete' log.id%}"><button type="button" class="btn btn-danger">Delete</button></a></th>
+
+</tr>
+{%endfor%}
+</table>
+</div>
+{% endblock %}
+

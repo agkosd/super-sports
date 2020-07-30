@@ -1,0 +1,18 @@
+<!-- This html page is for posting the workout logger. Users can update the stats for exercises from the logger list -->
+
+{% extends 'fitness_app/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="jumbotron page-section">
+<div><h1>Workout Logger</h1></div>
+<form method="post">
+    {% csrf_token %}
+    {%crispy form%}
+    <h3>To Update,Delete Your Logs Click on the Button Below</h3>
+    <a href="{%url 'fitness_app:logger-list' %}">
+    	<button class="btn btn-primary">Stats</button>
+    </a>
+</form>
+</div>
+{% endblock %}

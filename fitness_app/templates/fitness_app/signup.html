@@ -1,0 +1,36 @@
+{% extends 'fitness_app/base.html' %}
+{% load crispy_forms_tags %}
+
+<!-- Ajax username availability checker -->
+{% block javascript %}
+  <script>
+    $("#id_username").change(function () {
+      var username = $(this).val();
+      $.ajax({
+        url: '{% url "fitness_app:check_username" %}',
+        data: {
+          'username': username
+        },
+        dataType: 'json',
+        success: function (data) {
+          if (data.taken) {
+            alert(data.message);
+          }
+        }
+      });
+    });
+  </script>
+{% endblock %}
+
+{% block content %}
+
+<!-- Signup form -->
+<div class="signup">
+<form method='post'>
+    {% csrf_token %}
+    {%crispy form%}
+
+</form>
+
+</div>
+{% endblock %}

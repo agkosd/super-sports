@@ -1,0 +1,17 @@
+{% extends 'fitness_app/base.html' %}
+{% load crispy_forms_tags %}<!-- uses crispy forms -->
+<!--  Displays the previously logged stats to the user -->
+{% block content %}
+<div class="jumbotron page-section">
+
+<div><h1>Stats Logger</h1></div>
+<form method="post">{% csrf_token %}
+    {%crispy form%}
+    <h3>To Update,Delete Your Stats Click on the Button Below</h3>
+    <a href="{%url 'fitness_app:stats' %}">
+    	<button class="btn btn-primary">Stats</button>
+    </a>
+</form>
+</div>
+{% endblock %}
+

@@ -1,0 +1,45 @@
+<!-- This html page is for showing users' profile. It has first name, last name, DOB, weight, TDEE, and macro split fields-->
+
+{% extends 'fitness_app/base.html' %}
+
+{% block content %}
+
+<div class="testpad container ">
+
+	<div class="jumbotron " style="background-color:white">
+
+        <h1>Profile</h1>
+        <div class="row">
+            <div class="col-lg-6 col-xl-6 mb-3 d-flex justify-content-center justify-content-md-start">
+                <h4>First Name: {{user.first_name}} </h4>
+            </div>
+            <div class="col-lg-6 col-xl-6 mb-3 d-flex justify-content-center justify-content-md-start">
+                <h4>Last Name: {{user.last_name}}</h4>
+            </div>
+            <div class="col-lg-6 col-xl-6 mb-3 d-flex justify-content-center justify-content-md-start">
+                <h4>DOB: {{stats.age}}</h4>
+            </div>
+            <div class="col-lg-6 col-xl-6 mb-3 d-flex justify-content-center justify-content-md-start">
+                <h4>Height: {{stats.height|floatformat:"1"}} cm</h4>
+            </div>
+            <div class="col-lg-6 col-xl-6 mb-3 d-flex justify-content-center justify-content-md-start">
+                <h4>Weight: {{stats.weight|floatformat:"0"}}</h4>
+            </div>
+						{% if stats.tdee %}
+            <div class="col-lg-6 col-xl-6 mb-3 d-flex justify-content-center justify-content-md-start">
+                <h4>TDEE: {{stats.tdee|floatformat:"0"}}</h4>
+            </div>
+						{% endif %}
+            <div></div>
+            <div class="edit button"><a href="{%url 'fitness_app:editprofile'%}" class='btn btn-primary' >Edit Age/DOB</a></div>
+            <div class="edit button"><a href="{%url 'fitness_app:edituser'%}" class='btn btn-danger' >Edit Name/Email</a></div>
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+{% endblock %}

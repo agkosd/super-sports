@@ -1,0 +1,32 @@
+<!-- This html page is showing the log stats which has date, bodyweight, fat, and calorie intake fields. User can
+ manually update or delete their input stats -->
+
+{% extends 'fitness_app/base.html' %}
+
+{% block content %}
+<div class="jumbotron page-section">
+<a href="{%url 'fitness_app:statsovertime'%}">
+	<button class="btn btn-primary">Log Stats</button>
+</a>
+<table style='width:100%'>
+	<tr>
+		<th>Date</th>
+		<th>BodyWeight</th>
+		<th>Fat</th>
+		<th>Calorie Intake</th>
+	</tr>
+{%for stat in stats %}
+<tr>
+	<th>{{stat.date}}</th>
+	<th>{{stat.bodyweight}}</th>
+	<th>{{stat.fat}}</th>
+	<th>{{stat.calorie_intake}}</th>
+	<th><a href="{%url 'fitness_app:stats-update' stat.id%}"><button>Update</button></a></th>
+	<th><a href="{%url 'fitness_app:stats-delete' stat.id%}"><button>Delete</button></a></th>
+
+</tr>
+{%endfor%}
+</table>
+</div>
+{% endblock %}
+

@@ -1,0 +1,12 @@
+<!-- This html page is for deleting users' stats -->
+{% extends 'fitness_app/base.html' %}
+
+{% block content %}
+<div class="jumbotron page-section">
+<div><h1>Delete Stats</h1></div>
+<form method="post">{% csrf_token %}
+	<p>Are you sure you want to delete ? </p>
+    <button type="submit" class="btn btn-success"> submit</button>
+</form>
+</div>
+{% endblock %}

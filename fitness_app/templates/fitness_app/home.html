@@ -1,0 +1,644 @@
+{% extends 'fitness_app/base.html' %}
+{% block content %}
+{% load static %}
+
+<div class="testpad container ">
+
+	<div class="jumbotron " style="background-color:white">
+        <h1>Hello {{user.first_name}}! Here is your progress:</h1>
+        <div class="row">
+            {% if context.weight_progress %}
+            <div class="col-lg-6 col-xl-6 mb-3 d-flex justify-content-center justify-content-md-start">
+                <h4>Weight goal progress: <br>Current weight: {{context.weight}}<br>Target: {{context.weight_progress|floatformat:"0"}} </h4>
+            </div>
+            {% endif %}
+            {% if context.fat_progress %}
+            <div class="col-lg-6 col-xl-6 mb-3 d-flex justify-content-center justify-content-md-start">
+                <h4>Fat goal progress:  <br>Current fat: {{context.fat}}<br>Target: {{context.fat_progress|floatformat:"0"}} </h4>
+            </div>
+            {% endif %}
+            {% if context.strength_progress %}
+            <div class="col-lg-6 col-xl-6 mb-3 d-flex justify-content-center justify-content-md-start">
+                <h4>Strength target: {{context.strength_progress|floatformat:"0"}} for {{context.exersize}}</h4>
+            </div>
+            {% endif %}
+						{% if context.tdee %}
+            <div class="col-lg-6 col-xl-6 mb-3 d-flex justify-content-center justify-content-md-start">
+							<h4>Your daily energy expenditure is {{ context.tdee|floatformat:"0" }} Calories.<br>
+							{% if context.tdee_target == 'Maintain' %}
+                Target daily intake: {{context.tdee|floatformat:"0"}}</h4>
+							{% endif %}
+							{% if context.tdee_target == 'Bulk' %}
+                Target daily intake: {{ context.tdee|add:"500"|floatformat:"0"}}</h4>
+							{% endif %}
+							{% if context.tdee_target == 'Cut' %}
+                Target daily intake: {{ context.tdee|add:"-500"|floatformat:"0"}}</h4>
+							{% endif %}
+						</div>
+						{% endif %}
+        </div>
+        <!-- Add graphs here! -->
+				<!-- exercise dropdown -->
+				<div  class="col-md-8 offset-md-2" style="background-color: white">
+                <h3> Select workout for graphs </h3>
+					<form method='post'>
+							{% csrf_token %}
+							{{ form.as_p }}
+							<button type="submit" class='btn btn-primary'>Select</button>
+					</form>
+				</div>
+
+				<!--charts-->
+				<div>
+				  <canvas id="userweight" </canvas>
+				</div>
+
+				<div>
+				  <canvas id="fatChart" </canvas>
+				</div>
+
+				<div>
+				  <canvas id="calChart" </canvas>
+				</div>
+
+				<div>
+				  <canvas id="myChart" </canvas>
+				</div>
+
+				<div>
+				  <canvas id="repmax" </canvas>
+				</div>
+
+    </div>
+
+
+</div>
+
+
+
+<script>
+  let userweight = document.getElementById('userweight').getContext('2d');
+  let fatChart = document.getElementById('fatChart').getContext('2d');
+  let calChart = document.getElementById('calChart').getContext('2d');
+
+
+  let myChart = document.getElementById('myChart').getContext('2d');
+  let repmax = document.getElementById('repmax').getContext('2d');
+
+  let b_weight = new Chart(userweight,{
+        type:'line',
+        data:{
+            datasets:[{
+                label:'body weight',
+                data:[],
+                fill: false,
+                borderColor: "#55bae7",
+                backgroundColor: "#55bae7",
+                pointBackgroundColor: "#55bae7",
+                pointBorderColor: "#55bae7",
+                pointHoverBackgroundColor: "#55bae7",
+                pointHoverBorderColor: "#0827d4",
+
+              }],
+            labels:[]
+        },
+        options:{}
+  });
+
+
+  let fat = new Chart(fatChart,{
+        type:'line',
+        data:{
+            datasets:[{
+                label:'body fat',
+                data:[],
+                fill: false,
+                borderColor: "#55bae7",
+                backgroundColor: "#55bae7",
+                pointBackgroundColor: "#55bae7",
+                pointBorderColor: "#55bae7",
+                pointHoverBackgroundColor: "#55bae7",
+                pointHoverBorderColor: "#0827d4",
+
+              }],
+            labels:[]
+        },
+        options:{}
+  });
+
+  let cal = new Chart(calChart,{
+        type:'line',
+        data:{
+            datasets:[{
+                label:'Calorie intake',
+                data:[],
+                fill: false,
+                borderColor: "#55bae7",
+                backgroundColor: "#55bae7",
+                pointBackgroundColor: "#55bae7",
+                pointBorderColor: "#55bae7",
+                pointHoverBackgroundColor: "#55bae7",
+                pointHoverBorderColor: "#0827d4",
+
+              }],
+            labels:[]
+        },
+        options:{}
+  });
+
+  // weight vs date
+  let chart = new Chart(myChart,{
+    		type:'line',
+      	data:{
+            datasets:[{
+                label:'weight',
+                data:[],
+                fill: false,
+                borderColor: "#55bae7",
+                backgroundColor: "#55bae7",
+                pointBackgroundColor: "#55bae7",
+                pointBorderColor: "#55bae7",
+                pointHoverBackgroundColor: "#55bae7",
+                pointHoverBorderColor: "#0827d4",
+            }],
+            labels:[]
+        },
+        options:{}
+  });
+
+  // 1rm
+  let rm = new Chart(repmax,{
+        type:'line',
+        data:{
+            datasets:[{
+                label:'1 rep max',
+                data:[],
+                fill: false,
+                borderColor: "#55bae7",
+                backgroundColor: "#55bae7",
+                pointBackgroundColor: "#55bae7",
+                pointBorderColor: "#55bae7",
+                pointHoverBackgroundColor: "#55bae7",
+                pointHoverBorderColor: "#0827d4",
+
+              }],
+            labels:[]
+        },
+        options:{}
+  });
+
+
+
+	//populate chart using for loop
+  let count = {{stats.workout_count}};
+
+	for (let i = 0;i < count; i++){
+		chart.data.labels.push(i);
+    rm.data.labels.push(i);
+		chart.update();
+    rm.update();
+	}
+
+  if(count == 1){
+    //remove labels
+    chart.data.labels.pop();
+    rm.data.labels.pop();
+    chart.update();
+    rm.update();
+
+    //add labels
+    chart.data.labels.push('{{stats.date0}}') ;
+    rm.data.labels.push('{{stats.date0}}') ;
+
+    //add data
+    chart.data.datasets[0].data.push({{stats.weight0}}) ;
+    rm.data.datasets[0].data.push({{stats.rm0}}) ;
+    chart.update();
+    rm.update();
+  }
+
+  if(count == 2){
+    //remove labels
+    chart.data.labels.pop();
+    chart.data.labels.pop();
+
+    rm.data.labels.pop();
+    rm.data.labels.pop();
+
+    chart.update();
+    rm.update();
+
+
+    //add labels
+    chart.data.labels.push('{{stats.date0}}') ;
+    chart.data.labels.push('{{stats.date1}}') ;
+
+    rm.data.labels.push('{{stats.date0}}') ;
+    rm.data.labels.push('{{stats.date1}}') ;
+
+    //add data
+    chart.data.datasets[0].data.push({{stats.weight0}}) ;
+    chart.data.datasets[0].data.push({{stats.weight1}}) ;
+
+    rm.data.datasets[0].data.push({{stats.rm0}}) ;
+    rm.data.datasets[0].data.push({{stats.rm1}}) ;
+    chart.update();
+    rm.update();
+  }
+
+  if(count == 3){
+
+    //remove labels
+    chart.data.labels.pop();
+    chart.data.labels.pop();
+    chart.data.labels.pop();
+
+    rm.data.labels.pop();
+    rm.data.labels.pop();
+    rm.data.labels.pop();
+
+    chart.update();
+    rm.update();
+
+
+    //add labels
+    chart.data.labels.push('{{stats.date0}}') ;
+    chart.data.labels.push('{{stats.date1}}') ;
+    chart.data.labels.push('{{stats.date2}}') ;
+
+    rm.data.labels.push('{{stats.date0}}') ;
+    rm.data.labels.push('{{stats.date1}}') ;
+    rm.data.labels.push('{{stats.date2}}') ;
+
+    //add data
+    chart.data.datasets[0].data.push({{stats.weight0}}) ;
+    chart.data.datasets[0].data.push({{stats.weight1}}) ;
+    chart.data.datasets[0].data.push({{stats.weight2}}) ;
+
+    rm.data.datasets[0].data.push({{stats.rm0}}) ;
+    rm.data.datasets[0].data.push({{stats.rm1}}) ;
+    rm.data.datasets[0].data.push({{stats.rm2}}) ;
+
+    chart.update();
+    rm.update();
+  }
+
+  if(count == 4){
+
+    //remove labels
+    chart.data.labels.pop();
+    chart.data.labels.pop();
+    chart.data.labels.pop();
+    chart.data.labels.pop();
+
+    rm.data.labels.pop();
+    rm.data.labels.pop();
+    rm.data.labels.pop();
+    rm.data.labels.pop();
+
+    chart.update();
+    rm.update();
+
+    //add labels
+    chart.data.labels.push('{{stats.date0}}') ;
+    chart.data.labels.push('{{stats.date1}}') ;
+    chart.data.labels.push('{{stats.date2}}') ;
+    chart.data.labels.push('{{stats.date3}}') ;
+
+    rm.data.labels.push('{{stats.date0}}') ;
+    rm.data.labels.push('{{stats.date1}}') ;
+    rm.data.labels.push('{{stats.date2}}') ;
+    rm.data.labels.push('{{stats.date3}}') ;
+
+    //add data
+    chart.data.datasets[0].data.push({{stats.weight0}}) ;
+    chart.data.datasets[0].data.push({{stats.weight1}}) ;
+    chart.data.datasets[0].data.push({{stats.weight2}}) ;
+    chart.data.datasets[0].data.push({{stats.weight3}}) ;
+
+    rm.data.datasets[0].data.push({{stats.rm0}}) ;
+    rm.data.datasets[0].data.push({{stats.rm1}}) ;
+    rm.data.datasets[0].data.push({{stats.rm2}}) ;
+    rm.data.datasets[0].data.push({{stats.rm3}}) ;
+    chart.update();
+    rm.update();
+  }
+
+  if(count >= 5){
+    // remove labels
+    chart.data.labels.pop();
+    chart.data.labels.pop();
+    chart.data.labels.pop();
+    chart.data.labels.pop();
+    chart.data.labels.pop();
+
+    rm.data.labels.pop();
+    rm.data.labels.pop();
+    rm.data.labels.pop();
+    rm.data.labels.pop();
+    rm.data.labels.pop();
+
+    // add labels
+    chart.data.labels.push('{{stats.date0}}') ;
+    chart.data.labels.push('{{stats.date1}}') ;
+    chart.data.labels.push('{{stats.date2}}') ;
+    chart.data.labels.push('{{stats.date3}}') ;
+    chart.data.labels.push('{{stats.date4}}') ;
+
+    rm.data.labels.push('{{stats.date0}}') ;
+    rm.data.labels.push('{{stats.date1}}') ;
+    rm.data.labels.push('{{stats.date2}}') ;
+    rm.data.labels.push('{{stats.date3}}') ;
+    rm.data.labels.push('{{stats.date4}}') ;
+
+    chart.update();
+    rm.update();
+
+    // add data
+    chart.data.datasets[0].data.push({{stats.weight0}}) ;
+    chart.data.datasets[0].data.push({{stats.weight1}}) ;
+    chart.data.datasets[0].data.push({{stats.weight2}}) ;
+    chart.data.datasets[0].data.push({{stats.weight3}}) ;
+    chart.data.datasets[0].data.push({{stats.weight4}}) ;
+
+    rm.data.datasets[0].data.push({{stats.rm0}}) ;
+    rm.data.datasets[0].data.push({{stats.rm1}}) ;
+    rm.data.datasets[0].data.push({{stats.rm2}}) ;
+    rm.data.datasets[0].data.push({{stats.rm3}}) ;
+    rm.data.datasets[0].data.push({{stats.rm4}}) ;
+
+    chart.update();
+    rm.update();
+  }
+
+
+  let usr_count = {{stats.user_count}};
+
+  for(let i = 0; i < usr_count; i++ ){
+    b_weight.data.labels.push(i);
+    fat.data.labels.push(i);
+    cal.data.labels.push(i);
+
+    b_weight.update();
+    fat.update();
+    cal.update();
+
+  }
+
+  if(usr_count == 1){
+    //remove lables
+    b_weight.data.labels.pop()
+    fat.data.labels.pop()
+    cal.data.labels.pop()
+
+    b_weight.update();
+    fat.update();
+    cal.update();
+
+    //add labels
+    b_weight.data.labels.push('{{stats.user_date0}}')
+    fat.data.labels.push('{{stats.user_date0}}')
+    cal.data.labels.push('{{stats.user_date0}}')
+
+
+    //add data
+    b_weight.data.datasets[0].data.push({{stats.bodyweight0}})
+
+    fat.data.datasets[0].data.push({{stats.fat0}})
+
+    cal.data.datasets[0].data.push({{stats.cal0}})
+
+
+    b_weight.update();
+    fat.update();
+    cal.update();
+  }
+
+  if(usr_count == 2){
+    //remove lables
+    b_weight.data.labels.pop()
+    b_weight.data.labels.pop()
+
+    fat.data.labels.pop()
+    fat.data.labels.pop()
+
+    cal.data.labels.pop()
+    cal.data.labels.pop()
+
+    b_weight.update();
+    fat.update();
+    cal.update();
+    //add labels
+    b_weight.data.labels.push('{{stats.user_date0}}')
+    b_weight.data.labels.push('{{stats.user_date1}}')
+
+    fat.data.labels.push('{{stats.user_date0}}')
+    fat.data.labels.push('{{stats.user_date1}}')
+
+    cal.data.labels.push('{{stats.user_date0}}')
+    cal.data.labels.push('{{stats.user_date1}}')
+
+    //add data
+    b_weight.data.datasets[0].data.push({{stats.bodyweight0}})
+    b_weight.data.datasets[0].data.push({{stats.bodyweight1}})
+
+    fat.data.datasets[0].data.push({{stats.fat0}})
+    fat.data.datasets[0].data.push({{stats.fat1}})
+
+
+    cal.data.datasets[0].data.push({{stats.cal0}})
+    cal.data.datasets[0].data.push({{stats.cal1}})
+
+
+    b_weight.update();
+    fat.update();
+    cal.update();
+
+
+
+  }
+  if(usr_count == 3){
+    //remove lables
+    b_weight.data.labels.pop()
+    b_weight.data.labels.pop()
+    b_weight.data.labels.pop()
+
+    fat.data.labels.pop()
+    fat.data.labels.pop()
+    fat.data.labels.pop()
+
+    cal.data.labels.pop()
+    cal.data.labels.pop()
+    cal.data.labels.pop()
+
+
+    b_weight.update();
+    fat.update();
+    cal.update();
+
+    //add labels
+    b_weight.data.labels.push('{{stats.user_date0}}')
+    b_weight.data.labels.push('{{stats.user_date1}}')
+    b_weight.data.labels.push('{{stats.user_date2}}')
+
+    fat.data.labels.push('{{stats.user_date0}}')
+    fat.data.labels.push('{{stats.user_date1}}')
+    fat.data.labels.push('{{stats.user_date2}}')
+
+    cal.data.labels.push('{{stats.user_date0}}')
+    cal.data.labels.push('{{stats.user_date1}}')
+    cal.data.labels.push('{{stats.user_date2}}')
+
+
+    //add data
+    b_weight.data.datasets[0].data.push({{stats.bodyweight0}})
+    b_weight.data.datasets[0].data.push({{stats.bodyweight1}})
+    b_weight.data.datasets[0].data.push({{stats.bodyweight2}})
+
+    fat.data.datasets[0].data.push({{stats.fat0}})
+    fat.data.datasets[0].data.push({{stats.fat1}})
+    fat.data.datasets[0].data.push({{stats.fat2}})
+
+    cal.data.datasets[0].data.push({{stats.cal0}})
+    cal.data.datasets[0].data.push({{stats.cal1}})
+    cal.data.datasets[0].data.push({{stats.cal2}})
+
+
+    b_weight.update();
+    fat.update();
+    cal.update();
+
+  }
+
+  if(usr_count == 4){
+    //remove lables
+    b_weight.data.labels.pop()
+    b_weight.data.labels.pop()
+    b_weight.data.labels.pop()
+    b_weight.data.labels.pop()
+
+    fat.data.labels.pop()
+    fat.data.labels.pop()
+    fat.data.labels.pop()
+    fat.data.labels.pop()
+
+    cal.data.labels.pop()
+    cal.data.labels.pop()
+    cal.data.labels.pop()
+    cal.data.labels.pop()
+
+    b_weight.update();
+    fat.update();
+    cal.update();
+
+    //add labels
+    b_weight.data.labels.push('{{stats.user_date0}}')
+    b_weight.data.labels.push('{{stats.user_date1}}')
+    b_weight.data.labels.push('{{stats.user_date2}}')
+    b_weight.data.labels.push('{{stats.user_date3}}')
+
+    fat.data.labels.push('{{stats.user_date0}}')
+    fat.data.labels.push('{{stats.user_date1}}')
+    fat.data.labels.push('{{stats.user_date2}}')
+    fat.data.labels.push('{{stats.user_date3}}')
+
+    cal.data.labels.push('{{stats.user_date0}}')
+    cal.data.labels.push('{{stats.user_date1}}')
+    cal.data.labels.push('{{stats.user_date2}}')
+    cal.data.labels.push('{{stats.user_date3}}')
+
+    //add data
+    b_weight.data.datasets[0].data.push({{stats.bodyweight0}})
+    b_weight.data.datasets[0].data.push({{stats.bodyweight1}})
+    b_weight.data.datasets[0].data.push({{stats.bodyweight2}})
+    b_weight.data.datasets[0].data.push({{stats.bodyweight3}})
+
+    fat.data.datasets[0].data.push({{stats.fat0}})
+    fat.data.datasets[0].data.push({{stats.fat1}})
+    fat.data.datasets[0].data.push({{stats.fat2}})
+    fat.data.datasets[0].data.push({{stats.fat3}})
+
+
+    cal.data.datasets[0].data.push({{stats.cal0}})
+    cal.data.datasets[0].data.push({{stats.cal1}})
+    cal.data.datasets[0].data.push({{stats.cal2}})
+    cal.data.datasets[0].data.push({{stats.cal3}})
+
+
+    b_weight.update();
+    fat.update();
+    cal.update();
+
+  }
+  if(usr_count == 5){
+    //add labels
+    b_weight.data.labels.pop()
+    b_weight.data.labels.pop()
+    b_weight.data.labels.pop()
+    b_weight.data.labels.pop()
+    b_weight.data.labels.pop()
+
+    fat.data.labels.pop()
+    fat.data.labels.pop()
+    fat.data.labels.pop()
+    fat.data.labels.pop()
+    fat.data.labels.pop()
+
+    cal.data.labels.pop()
+    cal.data.labels.pop()
+    cal.data.labels.pop()
+    cal.data.labels.pop()
+    cal.data.labels.pop()
+
+    b_weight.update();
+    fat.update();
+    cal.update();
+    //add labels
+    b_weight.data.labels.push('{{stats.user_date0}}')
+    b_weight.data.labels.push('{{stats.user_date1}}')
+    b_weight.data.labels.push('{{stats.user_date2}}')
+    b_weight.data.labels.push('{{stats.user_date3}}')
+    b_weight.data.labels.push('{{stats.user_date4}}')
+
+    fat.data.labels.push('{{stats.user_date0}}')
+    fat.data.labels.push('{{stats.user_date1}}')
+    fat.data.labels.push('{{stats.user_date2}}')
+    fat.data.labels.push('{{stats.user_date3}}')
+    fat.data.labels.push('{{stats.user_date4}}')
+
+    cal.data.labels.push('{{stats.user_date0}}')
+    cal.data.labels.push('{{stats.user_date1}}')
+    cal.data.labels.push('{{stats.user_date2}}')
+    cal.data.labels.push('{{stats.user_date3}}')
+    cal.data.labels.push('{{stats.user_date4}}')
+
+
+    //add data
+    b_weight.data.datasets[0].data.push({{stats.bodyweight0}})
+    b_weight.data.datasets[0].data.push({{stats.bodyweight1}})
+    b_weight.data.datasets[0].data.push({{stats.bodyweight2}})
+    b_weight.data.datasets[0].data.push({{stats.bodyweight3}})
+    b_weight.data.datasets[0].data.push({{stats.bodyweight4}})
+
+    fat.data.datasets[0].data.push({{stats.fat0}})
+    fat.data.datasets[0].data.push({{stats.fat1}})
+    fat.data.datasets[0].data.push({{stats.fat2}})
+    fat.data.datasets[0].data.push({{stats.fat3}})
+    fat.data.datasets[0].data.push({{stats.fat4}})
+
+    cal.data.datasets[0].data.push({{stats.cal0}})
+    cal.data.datasets[0].data.push({{stats.cal1}})
+    cal.data.datasets[0].data.push({{stats.cal2}})
+    cal.data.datasets[0].data.push({{stats.cal3}})
+    cal.data.datasets[0].data.push({{stats.cal4}})
+
+
+    b_weight.update();
+    fat.update();
+    cal.update();
+
+  }
+
+</script>
+
+{% endblock %}

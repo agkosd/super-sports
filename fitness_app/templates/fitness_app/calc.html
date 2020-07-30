@@ -1,0 +1,27 @@
+{% extends 'fitness_app/base.html' %}
+{% block content %}
+
+<!--Section containing the page title, page description and TDEE calculator form-->
+<div class="jumbotron page-section">
+	<h1 class="page-title">Ideal Caloric Intake Calculator</h1>
+	<p class="page-description">
+		This page allows you to determine your ideal caloric intake tailored to your workout goals. This can be done by caluclating your Total Daily Energy Expenditure (TDEE) based on various personal characteristics.
+	</p>
+	<p class="page-description">
+		This calculator takes in your age, weight, height, gender, activity level and body fat percentage to calculate this ideal caloric intake sum.
+	</p>
+
+	<!--Calculator form, which takes in your age, weight, height, and activity level to calculate your ideal caloric intake-->
+	<div id="calc-form-wrapper" class="mx-auto">
+		<form method="post">
+			{% csrf_token %}
+			{{ form.as_p }}
+
+			<div id="tdee-calc-button">
+				<button type="submit">Calculate</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,386 @@
+{% extends 'fitness_app/base.html' %}
+{% block content %}
+{% load static %}
+
+<!--This section contains the page title and description, as well as the form to generate a stregnth standards table for a given exercise-->
+<!--It also features a One-Rep-Max calculator to estimate the maximum weight you can lift for a particular exercise-->
+<div class="jumbotron page-section">
+	<!--Page Title and Descriptions-->
+	<h1>Weightlifting Strength Standards</h1>
+	<p>This page allows you to compare your One-Rep Max for a particular lift with strength standards for your weight group. The One-Rep Max calculator estimates the maximum weight you can lift for a particular exercise based on the weight you lifted and how many reps you were able to perform on it.
+	</p>
+	<p>
+	Strength Standards are divided into the categories: Beginner, Novice, Intermediate and Advanced. Your One-Rep Max will be compared with the standard 1RM for each of these categories so you can gauge your progress relative to the skill levels of your peers.
+	</p>
+	<p>
+	To calculate the predicted strength level for each of the categories above, we haved used the model developed by Greg Nuckols from Stronger By Science  An explanation of how he derived this prediction model can be found <a href="https://www.strongerbyscience.com/your-drug-free-muscle-and-strength-potential-part-2/">here.</a>
+	</p>
+	<p>
+	Currently, we will only display strength standards for the Squat, Deadlift, Bench Press and Overhead Press. More Standards will be added in the future.
+	</p>
+
+	<!-- A row containing a form for selecting the exercise to generate strength standards for. And a toggle to switch between metric and imperial units-->
+	<div class="row">
+		<!--A dropdown menu form which allows the user to select the exercise to generate a strength standards table for-->
+		<div class="form-group col-lg-7 col-xl-7 mb-3">
+			<h4>Choose your exercise</h4>
+			
+			<!--Label for dropdown menu, which is hidden-->
+			<label for="sel1" style="display:none">Select Exercise:</label>
+			
+			<!--Specifying the type for form - a drop-down menu. On selecting an item, refreshSelectedEx() is called, which toggles the appropriate table data-->
+			<select class="form-control" id="exerciseSel" onchange="if (this.selectedIndex) refreshSelectedEx();">
+			
+			<!--Sets a default value, which is not able to be selected.-->
+			<option value="default" disabled selected>Select your option</option>
+			
+			<!--Dropdown menu options-->
+			<option value="Bench Press">Bench Press</option>
+			<option value="Overhead Press">Overhead Press</option>
+			<option value="Squat">Squat</option>
+			<option value="Deadlift">Deadlift</option>
+			</select>
+		</div>
+
+		<!--Toggle button for switching between imperial and metric units-->
+		<div class="col-lg-5 col-xl-5 mb-3">
+			<h4>Select Kilograms or Pounds</h4>
+			<!--toggling the button calls toggleUnit(), which changes how weight values are displayed on the page (either in kg or lbs)-->
+			<div id="unittoggle" class="btn-group btn-group-toggle" data-toggle="buttons" onclick="toggleUnit()">
+			
+			<!--button for selecting kgs-->
+			<label class="btn btn-light active">
+				<input type="radio" name="options" id="unit-option-kg" autocomplete="off" checked> Kilograms (Kg)
+			</label>
+			<!--button for selecting lbs-->
+			<label class="btn btn-light">
+				<input type="radio" name="options" id="unit-option-lb" autocomplete="off"> Pounds (Lbs)
+			</label>
+
+			</div>
+		</div>
+
+	</div>
+	<!--Div containing a 1RM (one rep max) calculator, which uses either sliders or text input to calculate the user's 1RM for a particular exercise-->
+	
+	<div class="1RM-container mt-4">
+		<h4>Calculate your One-Rep-Max</h4>
+		
+		<!--SLider and text input for the weight the user lifted, either in kg or lbs-->
+		<div class="weight-input col-lg-5 col-xl-5 mt-3 mb-3">
+			<span>Weight Lifted:</span>
+				<input class="slider-text-input" id="w-range-text" type="text" min="1" max="300" value="1" >
+				<span id="1RM-unit-toggle"> (kgs)</span>
+				<!-- Slider with max value 300kg, which allows the user to input how much weight they lifted -->
+				<input type="range" min="1" max="300" value="1" class="custom-range" id="weight-range">
+		</div>
+
+		<!--SLider and text input for the reps the user performed at the weight specified above-->
+		<div class="rep-input col-lg-5 col-xl-5 mt-3 mb-3">
+			<span>Number of Reps:</span>
+			<input class="slider-text-input" id="r-range-text" type="text" min="1" max="20" value="1" >
+
+			<!-- Slider with max value 20 reps, which allows the user to input how many reps they were able to perform -->
+			<input type="range" min="1" max="20" value="1" class="custom-range" id="rep-range">
+		</div>
+
+		<!--Displays the 1RM calculation based on the slider or text input above in both KGs and Lbs-->
+		<h4>Your 1RM for this exercise is: <span id="1RM-result"></span> kg. / <span id="1RM-result-Lb"></span> lbs.</h4>
+
+	</div>
+
+	<!--This button generates 2 strength standards table using toggleTable() according to the user's registered weight and the exercise selected in the dropdown menu-->
+	<button type="button" id="tblbtn" class="btn btn-primary btn-disabled mt-3 mb-3" onclick="toggleTable()">
+		Show Strength Standards Table
+	</button>
+</div>
+
+<!--Section containing a strength standards table for the chosen exercise generated specifically for the user's weight-->
+<div class="jumbotron" id="user-standards" style="display:none">
+
+	<!-- Header that can be changed to display the selected the exercise-->
+	<h2 id="exname" > Bench Press Strength Standards </h2>
+
+	<!--Receives and displays the logged-in user's weight from an HTTPResponse sent in the def StrengthStandards() from view.py-->
+	<h4 style="margin-top:30px"> Standards for your Weight: {{stats.weight}} kg </h4>
+
+	<!--displays a table of strength standards for the user's specific bodyweight and the selected exercise-->
+	<div id="usr-table" class="table-responsive" style="display:none; text-align: center;">
+		<table class="table table-bordered table-striped table-hover tablediv mt-2">
+			<thead>
+				<tr>
+					<th scope="col" class = "text-center">BW</th>
+					<th scope="col" class = "text-center">Beginner</th>
+					<th scope="col" class = "text-center">Novice</th>
+					<th scope="col" class = "text-center">Intermediate</th>
+					<th scope="col" class = "text-center">Advanced</th>
+					<th scope="col" class = "text-center">Elite</th>
+				</tr>
+			</thead>
+			<tbody id="usr-table-body">
+				<tr>
+					<th scope="row">{{stats.weight}}</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
+
+	</div>
+</div>
+
+<!--Section containing a strength standards table for the chosen exercise generated for many different bodyweights separated by 5kg intervals-->
+<div class="jumbotron" id="tablediv" style="display:none">
+
+	<!--section header-->
+	<h2> Standards for other Weight Classes </h2>
+
+	<!-- div containing the strength standards table which is hidden until "Show Strength Standards" button is pressed-->
+	<div id="table" class="table-responsive" style="display:none">
+
+		<!--Strength Standards Table-->
+		<table class="table table-bordered table-striped table-hover tablediv mt-2">
+			<thead>
+				<tr>
+					<th scope="col" class = "text-center">BW</th>
+					<th scope="col" class = "text-center">Beginner</th>
+					<th scope="col" class = "text-center">Novice</th>
+					<th scope="col" class = "text-center">Intermediate</th>
+					<th scope="col" class = "text-center">Advanced</th>
+					<th scope="col" class = "text-center">Elite</th>
+				</tr>
+			</thead>
+			<!-- Rows Generated for many different bodyweights, separated by 5kg intervals-->
+			<tbody id="table-body">
+				<tr>
+					<th scope="row">55</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<th scope="row">60</th>
+					<td id ="td00"></td>
+					<td id ="td01"></td>
+					<td id ="td02"></td>
+					<td id ="td03"></td>
+					<td id ="td04"></td>
+				</tr>
+				<tr>
+					<th scope="row">65</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<th scope="row">70</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<th scope="row">75</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<th scope="row">80</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<th scope="row">85</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<th scope="row">90</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<th scope="row">95</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<th scope="row">100</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<th scope="row">110</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<th scope="row">115</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<th scope="row">120</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<th scope="row">125</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<tr>
+					<th scope="row">130</th>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+
+<!--Load the JS file for this page stored in static/scripts folder-->
+<script type="text/javascript" src = "{% static "scripts/strengthstandards.js" %}"></script>
+
+<!--Javascript for functions that had to be included in the HTML page, because it uses the user's weight variable, which is sent as an HTTP response-->
+<script>
+
+//THis function generates the Strength Standards tables based on the exercise chosen from the dropdown menu, the KG or LB measurement
+//toggle button, and the logged-in user's bodyweight
+function toggleTable(){
+	var x = document.getElementById("table");
+	var userStandardsTable = document.getElementById("usr-table");
+	var e = document.getElementById("exerciseSel");
+	var exerciseString = e.options[e.selectedIndex].value;
+	var kg = document.getElementById("unit-option-kg");
+	var unitString = kg.checked ? ' (Kg)' : ' (Lb)';
+	
+	//Logs the execise selected in the dropdown menu
+	console.log(exerciseString);
+
+	//If an exercise has been selected from the dropdown menu, display the tables
+	if (exerciseString !== "default"){
+
+			//display the hidden tables
+			if (x.style.display == "none"){
+				x.style.display = "block";
+				userStandardsTable.style.display = "block";
+			}
+
+			//Change the section titles to match the chosen exercise
+			var titleString = exerciseString + " Strength Standards" + unitString;
+			var exerciseTitle = document.getElementById("exname")
+			exerciseTitle.innerHTML = titleString;
+
+			//Generate the appropriate values for each table and populate them
+			populateTable(exerciseString, "table-body");
+			populateTable(exerciseString, "usr-table-body");
+
+			//Display the divs containing the tables
+			document.getElementById("user-standards").style.display = "block";
+			document.getElementById("tablediv").style.display = "block";
+
+			//Scroll down to the first table
+			document.getElementById("user-standards").scrollIntoView({behavior: 'smooth'});
+	}
+}
+
+//Generates the Strength Standards values for the chosen exercise and each weight class
+function populateTable(exerciseType, tableID) {
+
+	//checks whether KGs or LBs are selected and configures a unitMultiplier to display the correct measurement
+	var kg = document.getElementById("unit-option-kg");
+	var unitMultiplier = kg.checked ? 1 : 2.204623;
+
+	//Gets an array from strengthstandards.js, which contains the multipliers for the chosen exercise
+	//for each standards category: beginner, novice, intermediate, ... etc.
+	var exerciseMultipliers = [];
+	if (exerciseType === "Bench Press" ){
+		exerciseMultipliers = BENCH_STANDARDS;
+	} else if (exerciseType === "Deadlift" ){
+		exerciseMultipliers = DL_STANDARDS;
+	} else if (exerciseType === "Squat" ){
+		exerciseMultipliers = SQUAT_STANDARDS;
+	} else if (exerciseType === "Overhead Press" ){
+		exerciseMultipliers = OHP_STANDARDS;
+	}
+
+	//for loop which populates the table with the appropriate values
+	var table = document.getElementById(tableID);
+	var bw = 0;
+
+	for (var i = 0, row; row = table.rows[i]; i++) {
+		if (tableID == "usr-table-body"){
+			//if it's the first table, then the value in the first column and row is the user's bodyweight
+			bw = {{stats.weight}}
+		} else {
+			//otherwise the the value in the first column is a bodyweight starting at 55, all the way to 120kg at 5kg intervals
+			bw = (55 + (i * 5));
+
+		}
+
+		//for loop for populating columns
+		for (var j = 0, col; col = row.cells[j]; j++) {
+
+			//if it's the first column, make the cell display a bodyweight
+			if (j ==0){				
+				col.innerHTML = Math.floor(bw * unitMultiplier).toString();
+				continue;
+			}
+
+			//for all other columns, generate the standard for the appropriate standards category (beginner, novice, intermediate, etc...)
+			//use the method find_standard to generate this value based on the column number representing the category, the body weight
+			//for the current row, and the exercise multiplier array specified above
+			var cellValue = findStandard(j,bw,exerciseMultipliers);
+			col.style = "text-align: center;"
+			col.innerHTML=cellValue.toString();
+		}
+	}
+}
+
+
+</script>
+
+{% endblock %}

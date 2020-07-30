@@ -1,0 +1,17 @@
+{% extends 'fitness_app/base.html' %}
+<!-- Template for the user to Login -->
+{% block title %}Login{% endblock %}
+
+{% block content %}
+{% if form.errors %}<!-- Checks if the user id and password matches with what was filled at the time of signup -->
+  <p>Your username and password didn't match. Please try again.</p>
+{% endif %}
+
+<h2>Login page</h2>
+<h2>Type in username and password to login</h2>
+<form method="post">
+  {% csrf_token %}
+  {{form.as_p}}
+  <button type="submit">Login</button>
+</form>
+{% endblock %}

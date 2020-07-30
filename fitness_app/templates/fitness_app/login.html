@@ -1,0 +1,13 @@
+<!-- This html page is user login, after type in the username and password, users need to click on the login button to log in -->
+
+{% extends 'fitness_app/base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<h2>Login</h2>
+<form method="post">
+  {% csrf_token %}
+  <button type="submit">Login</button>
+</form>
+{% endblock %}

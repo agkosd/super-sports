@@ -1,0 +1,16 @@
+const WORKOUT_LIST = [
+  "Squat",
+  "Deadlift",
+  "Bench Press",
+  "Overhead Press",
+  "Chin-Up",
+  "Pull-Up",
+  "Biceps Curl",
+  "Triceps Pushdown",
+  "Incline Bench Press",
+  "Row",
+  "Cable Row",
+  "Front Squat",
+  "Dip",
+  "Lateral Raise",
+];

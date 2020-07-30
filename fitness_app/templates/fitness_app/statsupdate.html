@@ -1,0 +1,14 @@
+{% extends 'fitness_app/base.html' %}
+<!-- Allows the user to update to update his stats  -->
+
+{% block content %}
+<div class="jumbotron page-section">
+
+<div><h1>Update Stats</h1></div>
+<form method="post">
+    {% csrf_token %}
+    {{form.as_p}}
+    <button type="submit" class="btn btn-success"> submit</button>
+</form>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'fitness_app/base.html' %}
+{% block content %}
+
+<!--Section containing the page title, page description and TDEE calculator form-->
+<div class="jumbotron page-section">
+	<h1 class="page-title">Ideal Caloric Intake Calculator</h1>
+	<p class="page-description">
+		This page allows you to determine your ideal caloric intake tailored to your workout goals. This can be done by caluclating your Total Daily Energy Expenditure (TDEE) based on various personal characteristics.
+	</p>
+	<p class="page-description">
+		This calculator takes in your age, weight, height, gender, activity level and body fat percentage to calculate this ideal caloric intake sum.
+	</p>
+
+	<!--Calculator form, which takes in your age, weight, height, and activity level to calculate your ideal caloric intake-->
+	<div id="calc-form-wrapper" class="mx-auto">
+		<form method="post">
+			{% csrf_token %}
+			{{ form.as_p }}
+
+			<div id="tdee-calc-button">
+				<button type="submit" class='btn btn-primary'>Calculate</button>
+			</div>
+		</form>
+	</div>
+
+	<!--
+	The div below called cal_info displays the calories you would need to consume to 
+	maintain weight, lose weight or gain weight depending on your goals. 
+	
+	These calorie totals are represented by the variables m_cal, c_cal and b_cal 
+	respectively. These values are sent to the page via the dictionary paramater 
+	in an HTTP Response generated in the views.py file in the method calculateTDEE().
+	-->
+	<div id="cal_info" align="center" >
+		<!--Displays your calculated 'maintenance calories' represented by m_cal-->
+		<h3 class="cal-info-header">Your Maintenance Calories are:</h3>
+		<h2>{{ m_cal }} kCal</h2>
+		<p>This is how many calories you would need to consume per day to maintain your current weight.</p>
+
+		<!--Displays your calculated 'cutting calories' represented by c_cal-->
+		<h3 class="cal-info-header">Your Cutting Calories are:</h3>
+		<h2>{{ c_cal }} kCal</h2>
+		<p>This is how many calories you would need to consume per day to lose weight at a healthy rate.</p>
+
+		<!--Displays your calculated 'bulking calories' represented by b_cal-->
+		<h3 class="cal-info-header">Your Bulking Calories are:</h3>
+		<h2>{{ b_cal }} kCal</h2>
+		<p>This is how many calories you would need to consume per day to gain weight at a healthy rate.</p>
+	</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,24 @@
+#tablediv {
+	background-color: #FFFFFF;
+}
+.firstblock{
+	margin-top:50px;
+	
+}
+
+#tdee-calc-button{
+  margin-top: 10px;
+  text-align: center;
+}
+#calc-form-wrapper{
+  width:80%;
+}
+.page-section{
+  background-color:white;
+}
+.cal-info-header{
+  margin-top: 20px;
+}
+.slider-text-input{
+  width:100px;
+}
